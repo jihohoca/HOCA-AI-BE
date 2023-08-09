@@ -65,6 +65,10 @@ const config = {
     from: envVars.EMAIL_FROM,
   },
   clientUrl: envVars.CLIENT_URL,
+  openai: {
+    openapi_key: "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",
+    openapi_mode: "text-davinci-002"
+  }
 };
 
 export default config;

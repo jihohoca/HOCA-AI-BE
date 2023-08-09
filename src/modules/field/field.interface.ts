@@ -8,4 +8,7 @@ export interface IField {
 
 export interface IFieldDoc extends IField, Document {}
 
-export interface IFieldModel extends Model<IFieldDoc>{}
+export interface IFieldModel extends Model<IFieldDoc>{
+  isTakenField(name: string): Promise<boolean>;
+}
+
