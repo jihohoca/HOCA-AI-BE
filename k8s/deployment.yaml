@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hoca-ai-be
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hoca-ai-be-app
+  template:
+    metadata:
+      labels:
+        app: hoca-ai-be-app
+    spec:
+      containers:
+      - command:
+        - yarn start
+        image: asia-northeast3-docker.pkg.dev/xenon-container-395408/chatgpt-repo/hoca-ai-be-app:latest
+        imagePullPolicy: Always
+        name: hoca-ai-be-app
+        env:
+          - name: MONGODB_URL
+            value: mongodb+srv://yorknguyen3008:Hailung3008.@cluster0.yb35uvy.mongodb.net/nodedatabase
+        ports:
+          - containerPort: 3000

@@ -3,12 +3,12 @@ import config from '../../config/config';
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
-    title: 'node-express-typescript-boilerplate API documentation',
+    title: 'HOCA-CHATGPT',
     version: '0.0.1',
-    description: 'This is a node express mongoose boilerplate in typescript',
+    description: 'HOCA-CHATGPT',
     license: {
       name: 'MIT',
-      url: 'https://github.com/saisilinus/node-express-mongoose-typescript-boilerplate.git',
+      url: 'https://github.com/jihohoca/HOCA-AI-BE',
     },
   },
   servers: [
