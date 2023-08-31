@@ -17,8 +17,8 @@ export const chatGptAnswer = catchAsync(async (req:MulterRequest , res: Response
 });
 
 
-export const chatGptAnsewQuestion = catchAsync(async (req: Request, res: Response) => {
+export const chatGptAnsewQuestion = catchAsync(async (req: Request, res:Response) => {
   const chatGptAnswer =  chatGptService.chatGptAnswerQuestion(req,res);
-  res.status(200).send(chatGptAnswer);
+  return chatGptAnswer;
 });
 
