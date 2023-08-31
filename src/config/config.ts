@@ -66,8 +66,9 @@ const config = {
   },
   clientUrl: envVars.CLIENT_URL,
   openai: {
-    openapi_key: "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",
-    openapi_mode: "text-davinci-002"
+    openapi_key: "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",
+    openapi_mode: "text-davinci-003",
+    openapi_mode_text: "gpt-3.5-turbo"
   }
 };
 

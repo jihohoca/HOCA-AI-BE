@@ -1,55 +1,107 @@
+import { IChatGpt, MulterRequest, NewCreatedChatGpt} from './chatgpt.interface';
+import chatGpt from './chatgpt.mode';
 
-import { IChatGpt, NewCreatedChatGpt } from "./chatgpt.interface";
-import chatGpt from "./chatgpt.mode";
+import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
+import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
 import { OpenAI } from 'langchain/llms';
 import { RetrievalQAChain } from 'langchain/chains';
-import { HNSWLib } from 'langchain/vectorstores';
-import { OpenAIEmbeddings } from 'langchain/embeddings';
-import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter';
-import * as fs from 'fs';
 import * as dotenv from 'dotenv';
+import { HNSWLib } from 'langchain/vectorstores';
+dotenv.config();
 import path from 'path';
+import { PDFLoader } from 'langchain/document_loaders/fs/pdf';
+import { Configuration, OpenAIApi } from 'openai';
+import config from '../../config/config';
+import { Response , Request} from 'express';
+
 /**
  * Create a user
  * @param {NewCreatedChatGpt} chatGptBody
  * @returns {Promise<IChatGpt>}
  */
 export const createChatGpt = async (chatGptBody: NewCreatedChatGpt): Promise<IChatGpt> => {
-    
-    return chatGpt.create(chatGptBody);
-  };
+  return chatGpt.create(chatGptBody);
+};
 
-export const chatGptAnswer = async (settingChatGpt:NewCreatedChatGpt) => {
-  dotenv.config();
-const __dirname = path.resolve();
-console.log(__dirname)
-const txtPath = '/Users/ductranvan/Desktop/HOCA-AI-BE/src/modules/chatgpt/test.pdf';
-const model = new OpenAI({});
-let vectorStore;
+export const chatGptAnswerFilePdf = async (req: MulterRequest) => {
+  const filename = req.files.screenshot.name;
+  const file = req.files.screenshot;
+  const __dirname = path.resolve();
+  let uploadPath = __dirname + '/src/uploads/' + filename;
 
-// 6.2. If the vector store file doesn't exist, create it
-// 6.2.1. Read the input text file
-const text = fs.readFileSync(txtPath, 'utf8');
-const textSplitter = new RecursiveCharacterTextSplitter({ chunkSize: settingChatGpt.chunkSize , chunkOverlap:settingChatGpt.chunkOverlap });
-const docs = await textSplitter.createDocuments([text]);
-// 6.2.4. Create a new vector store from the documents using OpenAIEmbeddings
-vectorStore = await HNSWLib.fromDocuments(docs, new OpenAIEmbeddings());
-// 6.2.5. Save the vector store to a file
+  const loader = new PDFLoader(uploadPath);
 
-
-// 7. Create a RetrievalQAChain by passing the initialized OpenAI model and the vector store retriever
-const chain =  RetrievalQAChain.fromLLM(model, vectorStore.asRetriever());
-// 8. Call the RetrievalQAChain with the input question, and store the result in the 'res' variable
-const answer = await chain.call({
-query: settingChatGpt.basePrompt,
-});
-
-// 9. Log the result to the console
-console.log({ answer });
-
-return answer;
+  await file.mv(uploadPath);
+  const docs = await loader.load();
+  const textSplitter = new RecursiveCharacterTextSplitter({
+    chunkSize: 1000,
+    chunkOverlap: 10,
+  });
+  const model = new OpenAI({});
+  const docOutput = await textSplitter.splitDocuments(docs);
   
+  let vectorStore = await HNSWLib.fromDocuments(docOutput, new OpenAIEmbeddings());
+
+  const vectorStoreRetriever = vectorStore.asRetriever();
+
+  const chain = RetrievalQAChain.fromLLM(model, vectorStoreRetriever);
+ 
+  console.log(chain)
+  // Call the RetrievalQAChain with the input question, and store the result in the 'res' variable
+  const res = await chain.call({
+    query: "univercity",
+  });
+
+  return res;
+};
+
+
+export const chatGptAnswerQuestion = async (req:Request, res: Response) => {
+  const configOpenAPI = new Configuration({
+    apiKey: config.openai.openapi_key,
+  });
+  const openai = new OpenAIApi(configOpenAPI);
+  const { question} = req.body;
+
+
+  try {
+    const completion: any = await openai.createChatCompletion(
+      {
+        model: config.openai.openapi_mode_text,
+
+        messages: [{ content: question, role: 'assistant' }],
+
+        stream: true,
+      },
+      { responseType: 'stream' }
+    );
+
+    completion.data.on('data', (chunk: any) => {
+      const payloads = chunk.toString().split('\n\n');
+
+      for (const payload of payloads) {
+        if (payload.includes('[DONE]')) return res.end();
+
+        if (payload.startsWith('data:')) {
+          const data = JSON.parse(payload.replace('data: ', ''));
+
+          try {
+            const chunk = data.choices[0].delta?.content;
+
+            if (chunk) {
+              res.write(chunk);
+            
+            }
+          } catch (error) {
+            console.log(`Error with JSON.parse and`);
+          }
+        }
+      }
+    });
+  } catch (error: any) {
+    console.log(error.message, 'error');
+  }
 }
 
 
-  
+

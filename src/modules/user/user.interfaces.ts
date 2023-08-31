@@ -1,7 +1,7 @@
 import mongoose, { Model, Document } from 'mongoose';
 import { QueryResult } from '../paginate/paginate';
 import { AccessAndRefreshTokens } from '../token/token.interfaces';
-
+import {Request} from 'express';
 export interface IUser {
   name: string;
   email: string;
@@ -28,4 +28,8 @@ export type NewCreatedUser = Omit<IUser, 'isEmailVerified'>;
 export interface IUserWithTokens {
   user: IUserDoc;
   tokens: AccessAndRefreshTokens;
+}
+
+export interface UserData extends Request{
+  user:IUserDoc
 }

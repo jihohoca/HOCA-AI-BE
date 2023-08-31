@@ -4,5 +4,13 @@ export interface IChatGpt {
     basePrompt:string
   }
 
-  export type NewCreatedChatGpt = Omit<IChatGpt, 'isEmailVerified'>;
+export type NewCreatedChatGpt = Omit<IChatGpt, 'isEmailVerified'>;
 
+export interface MulterRequest extends Request {
+    files: any;
+}
+
+
+export interface UserRequest extends Request  {
+  question: any;
+}
