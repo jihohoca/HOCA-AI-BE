@@ -3,6 +3,7 @@ import authRoute from './auth.route';
 import docsRoute from './swagger.route';
 import userRoute from './user.route';
 import fieldRoute from './field.route';
+import chatGptRoute from './chatgpt.route'
 
 const router = express.Router();
 
@@ -28,6 +29,10 @@ const defaultIRoute: IRoute[] = [
     path: '/docs',
     route: docsRoute,
   },
+  {
+    path: '/chatGpt',
+    route: chatGptRoute,
+  }
 ];
 
 

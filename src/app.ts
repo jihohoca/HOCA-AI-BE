@@ -12,6 +12,9 @@ import { ApiError, errorConverter, errorHandler } from './modules/errors';
 import { morgan } from './modules/logger';
 import { authLimiter } from './modules/utils';
 import routes from './routes/v1';
+import fileUpload from 'express-fileupload';
+
+
 
 const app: Express = express();
 
@@ -41,6 +44,8 @@ app.use(ExpressMongoSanitize());
 // gzip compression
 app.use(compression());
 
+app.use(fileUpload())
+
 // jwt authentication
 app.use(passport.initialize());
 passport.use('jwt', jwtStrategy);
@@ -63,5 +68,6 @@ app.use(errorConverter);
 
 // handle error
 app.use(errorHandler);
+
 
 export default app;
